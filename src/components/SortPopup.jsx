@@ -1,21 +1,37 @@
 import React from 'react'
 
-function SortPopup() {
-    
+function SortPopup({items}) {
     const [visiblePopup, setVisiblePopup] = React.useState(false)
+    const [activeItem, setActiveItem] = React.useState(0)
+    const sortRef = React.useRef()
+
+    const activeLabel = items[activeItem].name 
+
+    const onSelectItem = (index) => {
+        setActiveItem(index);
+        setVisiblePopup(false);
+    }
 
     const toggleVisiblePopup = () => {
         setVisiblePopup(!visiblePopup)
     }
 
+    const handleOutsideClick = (e) => {
+        // console.log(e.path);
+        if (!e.path.includes(sortRef.current)) {  // Якщо в шляху є ссилка на блок sort
+            setVisiblePopup(false);
+        }
+    }
+
     React.useEffect(() => {
-        document.body.addEventListener("click", () => console.log('123'));
-    }, [visiblePopup])
-    
+        document.body.addEventListener("click", handleOutsideClick);
+    }, [])
+
     return (
-        <div className="sort">
+        <div ref={sortRef} className="sort">
             <div className="sort__label">
                 <svg
+                    className={visiblePopup ? 'rotated' : ''}
                     width="10"
                     height="6"
                     viewBox="0 0 10 6"
@@ -28,14 +44,22 @@ function SortPopup() {
                     />
                 </svg>
                 <b>Сортировка по:</b>
-                <span onClick={toggleVisiblePopup}>популярности</span>
+                <span onClick={toggleVisiblePopup}>{activeLabel}</span>
             </div>
-            { visiblePopup &&
+            {visiblePopup &&
                 <div className="sort__popup">
                     <ul>
-                        <li className="active">популярности</li>
-                        <li>цене</li>
-                        <li>алфавиту</li>
+                        {
+                            items &&
+                            items.map((obj, index) => (
+                                <li
+                                    onClick={() => onSelectItem(index)} 
+                                    key={`${obj.type}_${index}`}
+                                    className={activeItem === index ? 'active' : ''}>
+                                    {obj.name}
+                                </li>
+                            ))
+                        }
                     </ul>
                 </div>
             }
